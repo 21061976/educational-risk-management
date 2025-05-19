@@ -1,30 +1,51 @@
 <!DOCTYPE html>
-<html dir="rtl">
+<html>
 <head>
+  <title>בוט ניהול סיכונים - עם אפשרות העלאת קבצים</title>
   <meta charset="UTF-8">
-  <title>בוט לניהול סיכוני אסדרת חדשנות חינוכית</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
+      font-family: Arial, sans-serif;
       direction: rtl;
-    }
-    
-    .container {
+      margin: 20px;
       max-width: 1200px;
       margin: 0 auto;
+      padding: 20px;
     }
     
     h1, h2, h3 {
       color: #0056b3;
     }
     
-    .form-section {
-      background-color: #f5f5f5;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+    button {
+      padding: 10px 15px;
+      background-color: #0056b3;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+    
+    button:hover {
+      background-color: #003d82;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
     
     .form-group {
@@ -33,39 +54,16 @@
     
     label {
       display: block;
-      margin-bottom: 5px;
       font-weight: bold;
+      margin-bottom: 5px;
     }
     
-    input[type="text"], textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    
-    textarea {
-      min-height: 150px;
-    }
-    
-    button {
-      background-color: #0056b3;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    
-    button:hover {
-      background-color: #003d82;
-    }
-    
-    .result-section {
+    .result {
       margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: none;
     }
     
     .risk-table {
@@ -76,7 +74,7 @@
     
     .risk-table th, .risk-table td {
       border: 1px solid #ddd;
-      padding: 8px;
+      padding: 10px;
       text-align: right;
     }
     
@@ -89,16 +87,107 @@
       background-color: #f9f9f9;
     }
     
-    .risk-table tr:hover {
-      background-color: #eaeaea;
-    }
-    
-    .high-severity {
+    .high-risk {
       background-color: #ffcccc !important;
     }
     
-    .medium-severity {
+    .medium-risk {
       background-color: #fff2cc !important;
+    }
+    
+    /* סגנונות עבור חלק העלאת הקבצים */
+    .file-upload-container {
+      border: 2px dashed #ccc;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+      text-align: center;
+      background-color: #f9f9f9;
+    }
+    
+    .file-upload-container:hover {
+      border-color: #0056b3;
+    }
+    
+    .file-list {
+      margin-top: 15px;
+      text-align: right;
+    }
+    
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      background-color: #e9f7fe;
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+    
+    .file-name {
+      flex-grow: 1;
+    }
+    
+    .file-size {
+      margin: 0 10px;
+      color: #666;
+    }
+    
+    .file-remove {
+      color: #ff4d4d;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+    
+    .tab {
+      padding: 10px 15px;
+      cursor: pointer;
+      margin-left: 5px;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 5px 5px 0 0;
+    }
+    
+    .tab.active {
+      background-color: #f5f5f5;
+      border-color: #ccc;
+      border-bottom-color: #f5f5f5;
+      font-weight: bold;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 0 0 5px 5px;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .file-preview {
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    
+    small {
+      color: #666;
+      font-size: 12px;
+      display: block;
+      margin-top: 5px;
     }
     
     .export-buttons {
@@ -108,435 +197,436 @@
     .export-buttons button {
       margin-left: 10px;
     }
-    
-    @media print {
-      button, .form-section {
-        display: none;
-      }
-      
-      body, .container {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      
-      h1 {
-        text-align: center;
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>בוט לניהול סיכוני אסדרת חדשנות חינוכית</h1>
+  <h1>בוט ניהול סיכוני אסדרת חדשנות חינוכית</h1>
+  
+  <div class="form-section">
+    <h2>הזנת פרטי הפרויקט</h2>
     
-    <div class="form-section">
-      <h2>הזנת פרטי הפרויקט</h2>
-      
-      <div class="form-group">
-        <label for="project-name">שם הפרויקט:</label>
-        <input type="text" id="project-name" placeholder="הכנס את שם הפרויקט">
-      </div>
-      
-      <div class="form-group">
-        <label for="project-description">תיאור הפרויקט:</label>
-        <textarea id="project-description" placeholder="תאר את הפרויקט בפירוט, כולל מאפייניו העיקריים"></textarea>
-      </div>
-      
-      <h3>תרחיש עתידי רצוי:</h3>
-      
-      <div class="form-group">
-        <label for="curriculum">תוכנית לימודים:</label>
-        <textarea id="curriculum" placeholder="תאר את תוכנית הלימודים המוצעת בפרויקט"></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="lte">למידה, הוראה והערכה:</label>
-        <textarea id="lte" placeholder="תאר את תהליכי הלמידה, ההוראה וההערכה בפרויקט"></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="infrastructure">תשתיות פיזיות וטכנולוגיות:</label>
-        <textarea id="infrastructure" placeholder="תאר את התשתיות הפיזיות והטכנולוגיות הנדרשות בפרויקט"></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="planning">תכנון וארגון:</label>
-        <textarea id="planning" placeholder="תאר את מבנה הארגון והתכנון בפרויקט"></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="stakeholders">בעלי עניין ושותפויות:</label>
-        <textarea id="stakeholders" placeholder="פרט את בעלי העניין והשותפויות הנדרשות בפרויקט"></textarea>
-      </div>
-      
-      <button id="analyze-button">נתח סיכונים</button>
+    <div class="form-group">
+      <label for="project-name">שם הפרויקט:</label>
+      <input type="text" id="project-name" placeholder="הכנס את שם הפרויקט">
     </div>
     
-    <div class="result-section" id="result-section" style="display: none;">
-      <h2>תוצאות ניתוח סיכונים</h2>
-      
-      <div id="risks-table-container"></div>
-      
-      <div class="export-buttons">
-        <button id="export-csv">ייצוא ל-CSV</button>
-        <button id="export-json">ייצוא ל-JSON</button>
-        <button id="print-table">הדפסה</button>
-      </div>
+    <div class="form-group">
+      <label for="project-desc">תיאור הפרויקט:</label>
+      <textarea id="project-desc" placeholder="תאר את הפרויקט בפירוט, כולל מאפייניו העיקריים"></textarea>
     </div>
+    
+    <h3>תרחיש עתידי רצוי:</h3>
+    
+    <div class="form-group">
+      <label for="curriculum">תוכנית לימודים:</label>
+      <textarea id="curriculum" placeholder="תאר את תוכנית הלימודים המוצעת בפרויקט"></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="lte">למידה, הוראה והערכה:</label>
+      <textarea id="lte" placeholder="תאר את תהליכי הלמידה, ההוראה וההערכה בפרויקט"></textarea>
+    </div>
+    
+    <h3>העלאת קבצים וחומרי רקע:</h3>
+    
+    <div class="form-group">
+      <label for="file-upload">העלאת מסמכי רקע מקצועיים:</label>
+      <div class="file-upload-container">
+        <input type="file" id="file-upload" multiple accept=".txt,.pdf,.doc,.docx">
+        <small>ניתן להעלות קבצי טקסט (.txt), PDF, או מסמכי Word. גודל מקסימלי: 5MB לקובץ.</small>
+      </div>
+      <div id="file-list" class="file-list"></div>
+    </div>
+    
+    <div class="form-group">
+      <label for="file-usage">כיצד להשתמש בקבצים שהועלו:</label>
+      <select id="file-usage" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+        <option value="reference">שימוש כחומר רקע לניתוח</option>
+        <option value="extract">מיצוי מידע רלוונטי לסיכונים</option>
+        <option value="compare">השוואה לפרויקטים קודמים</option>
+      </select>
+    </div>
+    
+    <button id="analyze-btn">נתח סיכונים</button>
   </div>
-
+  
+  <div id="result" class="result"></div>
+  
   <script>
-    // מרכיב ניהול סיכונים בבוט
-    class RiskManagementTable {
+    // מידע קבוע לסיכונים
+    const predefinedRisks = [
+      { id: 1, name: "תוכן, תכנים", description: "היווצרות גדולה יותר של תכנים מבוססי בינה מלאכותית", impacts: "הצורך למנגנוני בקרה לאיכות, השטחה של התוצר", severity: 24, probability: 6, impact: 4, strategies: ["פיתוח מנגנוני בקרת איכות מובנים", "הגדרת סטנדרטים ברורים לאיכות התוצרים", "ביקורת עמיתים על תכנים לפני אישורם"] },
+      { id: 2, name: "כשירות צוות בבינה מלאכותית", description: "עלייה בדרישה לכשירות", impacts: "הכשרה של צוותים, צורך למודעות להשלכות אתיות", severity: 21, probability: 7, impact: 3, strategies: ["פיתוח תוכנית הכשרה מקיפה", "הקצאת שעות ייעודיות ללמידה והתנסות", "יצירת קהילת למידה מקצועית"] },
+      { id: 3, name: "מקצוענות", description: "אובדן ידע ומקצוענות", impacts: "ירידה באמון באנשי מקצוע, בריחת אנשי מקצוע לתחומים אחרים", severity: 18, probability: 3, impact: 6, strategies: ["שילוב מומחיות אנושית כחלק מובנה בתהליכים", "תיעוד ושימור ידע מקצועי", "הגדרת תחומים בהם שיקול דעת אנושי הוא הכרחי"] },
+      { id: 4, name: "ארגון ותכנון", description: "שיבוש של תיאורי תפקידים", impacts: "החלשות מקום הדיאלוג הבין צוותי", severity: 8, probability: 2, impact: 4, strategies: ["הגדרה מחדש של תפקידים ותחומי אחריות", "יצירת מנגנונים לחיזוק התקשורת הבין-צוותית"] },
+      { id: 5, name: "תשתיות", description: "תלות בתשתיות תקשוב חזקות", impacts: "צורך לתקצוב רכישה ותחזוקה, תלות יתר בטכנולוגיה", severity: 6, probability: 3, impact: 2, strategies: ["תכנון תקציבי רב-שנתי", "פיתוח מענים חלופיים למקרה של תקלות"] }
+    ];
+    
+    // ניהול קבצים
+    class FileManager {
       constructor() {
-        // מבנה טבלת הסיכונים המוגדרת מראש
-        this.riskCategories = [
-          { id: 1, name: "תוכן, תכנים", description: "היווצרות גדולה יותר של תכנים מבוססי ב\"מ", impacts: "הצורך למנגנוני בקרה לאיכות, השטחה של התוצר" },
-          { id: 2, name: "כשירות צוות בב\"מ", description: "עלייה בדרישה לכשירות", impacts: "הכשרה של צוותים, צורך למודעות להשלכות אתיות" },
-          { id: 3, name: "מקצוענות", description: "אובדן ידע ומקצוענות", impacts: "ירידה באמון באנשי מקצוע, בריחת אנשי מקצוע לתחומים אחרים" },
-          { id: 4, name: "ארגון ותכנון", description: "שיבוש של תיאורי תפקידים", impacts: "החלשות מקום הדיאלוג הבין צוותי, ״אדם מול מכונה״ במקום ״אדם מול אדם״" },
-          { id: 5, name: "תשתיות", description: "תלות בתשתיות תקשוב חזקות", impacts: "צורך לתקצוב רכישה ותחזוקה, תלות יתר בטכנולוגיה" },
-          { id: 6, name: "פרקטיקות הוראה", description: "שיבושים בדרכי הוראה", impacts: "היווצרות גדולה יותר של פרקטיקות, צורך במנגנוני בקרה לאיכות, צורך מיידי להכשרה מקצועית" },
-          { id: 7, name: "הערכה של עבודת הצוות", description: "עדכון תהליך הערכה צוותי", impacts: "שינוי בדרישות הערכה ומדידה" },
-          { id: 8, name: "חיבוריות", description: "פיצול בין הנלמד במחקר לבין עקרונות יישום", impacts: "קושי ביישום ממצאי מחקר בשדה" }
-        ];
-        
-        // ערכי ברירת מחדל לניקוד סיכונים כפי שהופיעו בטבלה
-        this.defaultRiskScores = [
-          { categoryId: 1, probability: 6, impact: 4, severity: 24 },
-          { categoryId: 2, probability: 7, impact: 3, severity: 21 },
-          { categoryId: 3, probability: 3, impact: 6, severity: 18 },
-          { categoryId: 4, probability: 2, impact: 4, severity: 8 },
-          { categoryId: 5, probability: 3, impact: 2, severity: 6 },
-          { categoryId: 6, probability: 2, impact: 3, severity: 6 },
-          { categoryId: 7, probability: 2, impact: 3, severity: 6 },
-          { categoryId: 8, probability: 1, impact: 2, severity: 2 }
-        ];
-        
-        this.projectRisks = [];
+        this.files = [];
+        this.maxFileSize = 5 * 1024 * 1024; // 5MB
       }
       
-      // ניתוח סיכונים עבור פרויקט ספציפי
-      analyzeProjectRisks(projectDescription) {
-        // מכאן הבוט ינתח את הפרויקט ויערוך התאמה של דירוגי הסיכון
-        this.projectRisks = this.riskCategories.map((category, index) => {
-          // בשלב זה נשתמש בערכי ברירת מחדל, בהמשך יוחלף באלגוריתם חכם יותר
-          const defaultScore = this.defaultRiskScores.find(score => score.categoryId === category.id);
+      // הוספת קובץ
+      addFile(file) {
+        // בדיקת גודל הקובץ
+        if (file.size > this.maxFileSize) {
+          alert(`הקובץ ${file.name} גדול מדי. הגודל המקסימלי הוא 5MB.`);
+          return false;
+        }
+        
+        // בדיקה אם הקובץ כבר קיים
+        if (this.files.some(f => f.name === file.name)) {
+          alert(`הקובץ ${file.name} כבר קיים ברשימה.`);
+          return false;
+        }
+        
+        // הוספת הקובץ לרשימה
+        this.files.push(file);
+        this.updateFileList();
+        return true;
+      }
+      
+      // הסרת קובץ
+      removeFile(fileName) {
+        const index = this.files.findIndex(f => f.name === fileName);
+        if (index !== -1) {
+          this.files.splice(index, 1);
+          this.updateFileList();
+          return true;
+        }
+        return false;
+      }
+      
+      // עדכון רשימת הקבצים בממשק
+      updateFileList() {
+        const fileListElement = document.getElementById('file-list');
+        fileListElement.innerHTML = '';
+        
+        this.files.forEach(file => {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'file-item';
           
-          // כאן יוטמע אלגוריתם שמתאים את הדירוג לפרויקט הספציפי
-          const projectRelevance = this.calculateProjectRelevance(category, projectDescription);
+          const fileSizeDisplay = this.formatFileSize(file.size);
           
-          // התאמת דירוג הסיכון לפי רלוונטיות לפרויקט
-          const probability = this.adjustScore(defaultScore.probability, projectRelevance);
-          const impact = this.adjustScore(defaultScore.impact, projectRelevance);
-          const severity = probability * impact;
+          fileItem.innerHTML = `
+            <div class="file-name">${file.name}</div>
+            <div class="file-size">${fileSizeDisplay}</div>
+            <div class="file-remove" data-filename="${file.name}">×</div>
+          `;
           
-          return {
-            id: category.id,
-            category: category.name,
-            description: category.description,
-            impacts: category.impacts,
-            probability: probability,
-            impact: impact,
-            severity: severity,
-            mitigationStrategies: this.generateMitigationStrategies(category, severity)
-          };
+          fileListElement.appendChild(fileItem);
         });
         
-        // מיון הסיכונים לפי חומרה יורדת
-        this.projectRisks.sort((a, b) => b.severity - a.severity);
-        
-        return this.projectRisks;
+        // הוספת מאזיני אירועים לכפתורי ההסרה
+        document.querySelectorAll('.file-remove').forEach(button => {
+          button.addEventListener('click', event => {
+            const fileName = event.target.getAttribute('data-filename');
+            this.removeFile(fileName);
+          });
+        });
       }
       
-      // חישוב רלוונטיות הסיכון לפרויקט ספציפי
-      calculateProjectRelevance(riskCategory, projectDescription) {
-        // כאן יוטמע אלגוריתם שמחפש מילות מפתח וקשרים בין תיאור הפרויקט לקטגוריית הסיכון
-        // לדוגמה בלבד:
-        const relevanceKeywords = {
-          "תוכן, תכנים": ["תוכן", "תכנים", "למידה", "מידע", "ידע", "ב\"מ"],
-          "כשירות צוות בב\"מ": ["צוות", "הכשרה", "מורים", "כשירות", "מיומנות", "ב\"מ"],
-          "מקצוענות": ["מקצועיות", "מומחיות", "ידע", "ניסיון", "מיומנות"],
-          "ארגון ותכנון": ["ארגון", "תכנון", "מבנה", "תפקידים", "ניהול"],
-          "תשתיות": ["תשתית", "טכנולוגיה", "ציוד", "מחשבים", "רשת", "תקשוב"],
-          "פרקטיקות הוראה": ["הוראה", "פדגוגיה", "למידה", "שיטות", "דרכים"],
-          "הערכה של עבודת הצוות": ["הערכה", "מדידה", "ביצועים", "צוות"],
-          "חיבוריות": ["חיבור", "קשר", "שיתוף פעולה", "אינטגרציה", "מחקר", "יישום"]
-        };
-        
-        const categoryKeywords = relevanceKeywords[riskCategory.name] || [];
-        let relevanceScore = 0;
-        
-        // חיפוש מילות מפתח בתיאור הפרויקט
-        categoryKeywords.forEach(keyword => {
-          if (projectDescription.includes(keyword)) {
-            relevanceScore += 0.2; // תוספת לציון הרלוונטיות עבור כל מילת מפתח שנמצאה
+      // המרת גודל קובץ לפורמט קריא
+      formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' bytes';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+      }
+      
+      // קריאת תוכן קובץ טקסט
+      readTextFile(file) {
+        return new Promise((resolve, reject) => {
+          if (file.type === 'text/plain') {
+            const reader = new FileReader();
+            reader.onload = event => {
+              resolve(event.target.result);
+            };
+            reader.onerror = () => {
+              reject(new Error(`שגיאה בקריאת הקובץ ${file.name}`));
+            };
+            reader.readAsText(file);
+          } else {
+            resolve(`[תוכן הקובץ ${file.name} אינו נתמך לקריאה ישירה]`);
           }
         });
-        
-        // ערך בין 0.5 ל-1.5, כאשר 1 מייצג רלוונטיות ניטרלית
-        return Math.max(0.5, Math.min(1.5, 1 + relevanceScore));
       }
       
-      // התאמת דירוג בהתאם לרלוונטיות לפרויקט
-      adjustScore(defaultScore, relevanceFactor) {
-        // התאמת הציון בהתבסס על רלוונטיות, עם שמירה על טווח 1-10
-        const adjustedScore = Math.round(defaultScore * relevanceFactor);
-        return Math.max(1, Math.min(10, adjustedScore));
-      }
-      
-      // יצירת אסטרטגיות להתמודדות עם הסיכון
-      generateMitigationStrategies(riskCategory, severity) {
-        // מאגר אסטרטגיות מיטיגציה לפי קטגוריה וחומרה
-        const strategies = {
-          "תוכן, תכנים": [
-            { minSeverity: 20, strategy: "פיתוח מנגנוני בקרת איכות מובנים ומוסדרים לתכנים מבוססי ב\"מ" },
-            { minSeverity: 10, strategy: "הגדרת סטנדרטים ברורים לאיכות התוצרים הנדרשת" },
-            { minSeverity: 1, strategy: "ביקורת עמיתים על תכנים לפני אישורם לשימוש" }
-          ],
-          "כשירות צוות בב\"מ": [
-            { minSeverity: 20, strategy: "פיתוח תוכנית הכשרה מקיפה ומחייבת לכל אנשי הצוות" },
-            { minSeverity: 10, strategy: "הקצאת שעות ייעודיות ללמידה והתנסות בכלי ב\"מ" },
-            { minSeverity: 1, strategy: "יצירת קהילת למידה מקצועית בנושא שימוש מושכל בב\"מ" }
-          ],
-          "מקצוענות": [
-            { minSeverity: 15, strategy: "שילוב מומחיות אנושית כחלק מובנה ומחייב בכל תהליך המשלב ב\"מ" },
-            { minSeverity: 8, strategy: "תיעוד ושימור ידע מקצועי באופן מסודר" },
-            { minSeverity: 1, strategy: "הגדרת תחומים בהם שיקול דעת אנושי מקצועי הוא הכרחי" }
-          ],
-          "ארגון ותכנון": [
-            { minSeverity: 8, strategy: "הגדרה מחדש של תפקידים ותחומי אחריות במערכת המשלבת ב\"מ" },
-            { minSeverity: 5, strategy: "יצירת מנגנונים לחיזוק התקשורת והדיאלוג הבין-צוותי" },
-            { minSeverity: 1, strategy: "פיתוח תרבות ארגונית המדגישה את הערך האנושי בחינוך" }
-          ],
-          "תשתיות": [
-            { minSeverity: 6, strategy: "תכנון תקציבי רב-שנתי לרכישה ותחזוקת תשתיות" },
-            { minSeverity: 3, strategy: "פיתוח מענים חלופיים למקרה של תקלות טכנולוגיות" },
-            { minSeverity: 1, strategy: "הגדרת סטנדרטים מינימליים לתשתיות הנדרשות" }
-          ],
-          "פרקטיקות הוראה": [
-            { minSeverity: 6, strategy: "פיתוח מאגר פרקטיקות הוראה מומלצות המשלבות ב\"מ" },
-            { minSeverity: 3, strategy: "תהליכי ניסוי והערכה מבוקרים לפרקטיקות חדשות" },
-            { minSeverity: 1, strategy: "שיתוף וחניכה של מורים בפרקטיקות מוצלחות" }
-          ],
-          "הערכה של עבודת הצוות": [
-            { minSeverity: 5, strategy: "פיתוח מדדים חדשים להערכת הצוות בסביבה משולבת ב\"מ" },
-            { minSeverity: 3, strategy: "הכשרת מנהלים בהערכת עבודה בסביבה משולבת טכנולוגיה" },
-            { minSeverity: 1, strategy: "שילוב משוב עמיתים כחלק מתהליכי הערכה" }
-          ],
-          "חיבוריות": [
-            { minSeverity: 2, strategy: "יצירת פורומים משותפים לאנשי מחקר ושדה" },
-            { minSeverity: 1, strategy: "הנגשת ממצאי מחקר לאנשי השדה ואיסוף משוב" }
-          ]
+      // הכנת מידע מהקבצים לניתוח
+      async prepareFilesInfo(usage) {
+        let result = {
+          summary: `קבצים שהועלו: ${this.files.length}`,
+          fileNames: this.files.map(f => f.name),
+          textContent: ''
         };
         
-        // בחירת אסטרטגיות מתאימות לפי רמת חומרה
-        const categoryStrategies = strategies[riskCategory.name] || [];
-        const relevantStrategies = categoryStrategies
-          .filter(s => s.minSeverity <= severity)
-          .map(s => s.strategy);
+        // אם נבחרה אפשרות למיצוי מידע, קרא את תוכן קבצי הטקסט
+        if (usage === 'extract' || usage === 'reference') {
+          for (const file of this.files) {
+            if (file.type === 'text/plain') {
+              try {
+                const content = await this.readTextFile(file);
+                result.textContent += `--- ${file.name} ---\n${content}\n\n`;
+              } catch (error) {
+                console.error(error);
+              }
+            }
+          }
+        }
         
-        return relevantStrategies;
+        return result;
+      }
+    }
+    
+    // יצירת מופע של מנהל הקבצים
+    const fileManager = new FileManager();
+    
+    // הוספת מאזין אירועים לאזור העלאת הקבצים
+    document.getElementById('file-upload').addEventListener('change', event => {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      
+      for (let i = 0; i < files.length; i++) {
+        fileManager.addFile(files[i]);
       }
       
-      // יצירת טבלת סיכונים בפורמט HTML
-      generateRiskTableHTML() {
-        let tableHTML = `
-          <table class="risk-table">
-            <thead>
-              <tr>
-                <th>מס'</th>
-                <th>קטגוריה</th>
-                <th>תיאור הסיכון</th>
-                <th>השלכות הסיכון</th>
-                <th>הסתברות (1-10)</th>
-                <th>נזק צפוי (1-10)</th>
-                <th>חומרת הסיכון</th>
-                <th>אסטרטגיות להתמודדות</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
-        
-        this.projectRisks.forEach(risk => {
-          tableHTML += `
+      // איפוס שדה העלאת הקבצים כדי לאפשר העלאה חוזרת של אותו קובץ
+      event.target.value = '';
+    });
+    
+    // פונקציה להכנת טבלת סיכונים
+    function generateRiskTable(risks) {
+      let tableHTML = `
+        <table class="risk-table">
+          <thead>
             <tr>
-              <td>${risk.id}</td>
-              <td>${risk.category}</td>
-              <td>${risk.description}</td>
-              <td>${risk.impacts}</td>
-              <td>${risk.probability}</td>
-              <td>${risk.impact}</td>
-              <td>${risk.severity}</td>
-              <td>
-                <ul>
-                  ${risk.mitigationStrategies.map(strategy => `<li>${strategy}</li>`).join('')}
-                </ul>
-              </td>
+              <th>מס'</th>
+              <th>קטגוריה</th>
+              <th>תיאור הסיכון</th>
+              <th>השלכות</th>
+              <th>הסתברות (1-10)</th>
+              <th>נזק צפוי (1-10)</th>
+              <th>חומרת הסיכון</th>
+              <th>אסטרטגיות להתמודדות</th>
             </tr>
-          `;
-        });
+          </thead>
+          <tbody>
+      `;
+      
+      risks.forEach(risk => {
+        const rowClass = risk.severity >= 15 ? 'high-risk' : 
+                         (risk.severity >= 8 ? 'medium-risk' : '');
         
         tableHTML += `
-            </tbody>
-          </table>
+          <tr class="${rowClass}">
+            <td>${risk.id}</td>
+            <td>${risk.name}</td>
+            <td>${risk.description}</td>
+            <td>${risk.impacts}</td>
+            <td>${risk.probability || '?'}</td>
+            <td>${risk.impact || '?'}</td>
+            <td>${risk.severity}</td>
+            <td>
+              <ul>
+                ${risk.strategies.map(s => `<li>${s}</li>`).join('')}
+              </ul>
+            </td>
+          </tr>
         `;
-        
-        return tableHTML;
-      }
+      });
       
-      // יצירת טבלת סיכונים בפורמט CSV
-      generateRiskTableCSV() {
-        let csv = "מספר,קטגוריה,תיאור הסיכון,השלכות הסיכון,הסתברות,נזק צפוי,חומרת הסיכון,אסטרטגיות להתמודדות\n";
-        
-        this.projectRisks.forEach(risk => {
-          csv += `${risk.id},"${risk.category}","${risk.description}","${risk.impacts}",${risk.probability},${risk.impact},${risk.severity},"${risk.mitigationStrategies.join('; ')}"\n`;
-        });
-        
-        return csv;
-      }
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
       
-      // יצירת טבלת סיכונים בפורמט JSON
-      generateRiskTableJSON() {
-        return JSON.stringify(this.projectRisks, null, 2);
-      }
+      return tableHTML;
     }
-
-    class RiskAssessmentBot {
-      constructor() {
-        this.projectData = null;
-        this.riskTable = new RiskManagementTable();
-      }
-      
-      // קריאת מסמך הפרויקט
-      readProjectDocument(projectData) {
-        this.projectData = projectData;
-        console.log("מסמך הפרויקט נקרא בהצלחה");
-      }
-      
-      // זיהוי סיכונים
-      identifyRisks() {
-        console.log("זיהוי סיכונים פוטנציאליים בפרויקט");
-      }
-      
-      // ניתוח סיכונים
-      analyzeRisks() {
-        console.log("ניתוח וכימות הסיכונים");
+    
+    // פונקציה להכנת תוכן לשוניות
+    function generateTabsContent(projectName, risks, filesInfo) {
+      return `
+        <h2>ניתוח סיכונים: ${projectName}</h2>
         
-        // יצירת תיאור מלא של הפרויקט לצורך ניתוח
-        const fullDescription = [
-          this.projectData.description,
-          this.projectData.curriculum,
-          this.projectData.lte,
-          this.projectData.infrastructure,
-          this.projectData.planning,
-          this.projectData.stakeholders
-        ].join(' ');
+        <div class="tabs">
+          <div class="tab active" data-tab="risks">טבלת סיכונים</div>
+          <div class="tab" data-tab="files">מידע מקבצים</div>
+          <div class="tab" data-tab="summary">סיכום והמלצות</div>
+        </div>
         
-        // ניתוח סיכונים ספציפיים לפרויקט
-        this.riskTable.analyzeProjectRisks(fullDescription);
-      }
-      
-      // הצלבה עם רגולציה קיימת
-      matchWithExistingRegulations() {
-        console.log("הצלבה עם רגולציה קיימת");
-      }
-      
-      // הפקת דוח סיכונים
-      generateRiskReport() {
-        if (!this.projectData) {
-          return { html: "יש להזין נתוני פרויקט תחילה" };
-        }
+        <div id="risks-tab" class="tab-content active">
+          ${generateRiskTable(risks)}
+        </div>
         
-        return {
-          html: this.riskTable.generateRiskTableHTML(),
-          csv: this.riskTable.generateRiskTableCSV(),
-          json: this.riskTable.generateRiskTableJSON()
-        };
-      }
-    }
-
-    // קוד ראשי - מוכן לשימוש
-    document.addEventListener('DOMContentLoaded', function() {
-      // אירוע ללחיצה על כפתור ניתוח
-      document.getElementById('analyze-button').addEventListener('click', function() {
-        // איסוף נתוני הפרויקט מהטופס
-        const projectData = {
-          name: document.getElementById('project-name').value,
-          description: document.getElementById('project-description').value,
-          curriculum: document.getElementById('curriculum').value,
-          lte: document.getElementById('lte').value,
-          infrastructure: document.getElementById('infrastructure').value,
-          planning: document.getElementById('planning').value,
-          stakeholders: document.getElementById('stakeholders').value
-        };
-        
-        // בדיקה שהוזנו נתונים מינימליים
-        if (!projectData.name || !projectData.description) {
-          alert('יש להזין לפחות שם פרויקט ותיאור כללי');
-          return;
-        }
-        
-        // יצירת מופע של הבוט
-        const bot = new RiskAssessmentBot();
-        
-        // קריאת מסמך הפרויקט
-        bot.readProjectDocument(projectData);
-        
-        // זיהוי סיכונים
-        bot.identifyRisks();
-        
-        // ניתוח סיכונים
-        bot.analyzeRisks();
-        
-        // הצלבה עם רגולציה קיימת
-        bot.matchWithExistingRegulations();
-        
-        // הפקת דוח סיכונים
-        const report = bot.generateRiskReport();
-        
-        // הצגת טבלת הסיכונים
-        document.getElementById('risks-table-container').innerHTML = report.html;
-        
-        // הצגת אזור התוצאות
-        document.getElementById('result-section').style.display = 'block';
-        
-        // הוספת צבעים לפי חומרת סיכון
-        const rows = document.querySelectorAll('.risk-table tbody tr');
-        rows.forEach(row => {
-          const severityCell = row.cells[6];
-          const severityValue = parseInt(severityCell.textContent);
-          
-          if (severityValue >= 15) {
-            row.classList.add('high-severity');
-          } else if (severityValue >= 8) {
-            row.classList.add('medium-severity');
+        <div id="files-tab" class="tab-content">
+          <h3>מידע מהקבצים שהועלו</h3>
+          ${filesInfo.fileNames.length > 0 ? 
+            `<p>קבצים שהועלו: ${filesInfo.fileNames.join(', ')}</p>
+             ${filesInfo.textContent ? 
+               `<h4>תוכן טקסט מהקבצים:</h4>
+                <div class="file-preview">${filesInfo.textContent}</div>` : 
+               '<p>אין תוכן טקסט שניתן להציג מהקבצים שהועלו.</p>'
+             }`
+            : '<p>לא הועלו קבצים לניתוח.</p>'
           }
+        </div>
+        
+        <div id="summary-tab" class="tab-content">
+          <h3>סיכום ממצאים והמלצות</h3>
+          
+          <h4>הסיכונים העיקריים:</h4>
+          <ul>
+            ${risks.slice(0, 3).map(risk => 
+              `<li><strong>${risk.name}:</strong> ${risk.description} (חומרה: ${risk.severity})</li>`
+            ).join('')}
+          </ul>
+          
+          <h4>המלצות עיקריות:</h4>
+          <ul>
+            ${risks.slice(0, 3).flatMap(risk => 
+              risk.strategies.slice(0, 1).map(strategy => `<li>${strategy}</li>`)
+            ).join('')}
+            <li>מומלץ להקים צוות ייעודי למעקב אחר סיכונים ויישום אסטרטגיות התמודדות</li>
+            <li>יש לתעד את תהליך ניהול הסיכונים ולעדכן את הניתוח באופן תקופתי</li>
+          </ul>
+        </div>
+        
+        <div class="export-buttons">
+          <button id="export-csv">ייצוא ל-CSV</button>
+          <button id="export-json">ייצוא ל-JSON</button>
+          <button id="print">הדפסה</button>
+        </div>
+      `;
+    }
+    
+    // פונקציה לייצוא לפורמט CSV
+    function generateCSV(risks) {
+      let csv = "מספר,קטגוריה,תיאור הסיכון,השלכות,הסתברות,נזק צפוי,חומרת הסיכון,אסטרטגיות להתמודדות\n";
+      
+      risks.forEach(risk => {
+        csv += `${risk.id},"${risk.name}","${risk.description}","${risk.impacts}",${risk.probability},${risk.impact},${risk.severity},"${risk.strategies.join('; ')}"\n`;
+      });
+      
+      return csv;
+    }
+    
+    // פונקציה להורדת קובץ
+    function downloadFile(content, fileName, contentType) {
+      const a = document.createElement("a");
+      const file = new Blob([content], { type: contentType });
+      a.href = URL.createObjectURL(file);
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    
+    // אירוע ללחיצה על כפתור ניתוח
+    document.getElementById('analyze-btn').addEventListener('click', async function() {
+      // איסוף מידע מהטופס
+      const projectName = document.getElementById('project-name').value;
+      const projectDesc = document.getElementById('project-desc').value;
+      const curriculum = document.getElementById('curriculum').value;
+      const lte = document.getElementById('lte').value;
+      const fileUsage = document.getElementById('file-usage').value;
+      
+      // בדיקת תקינות הקלט
+      if (!projectName || !projectDesc) {
+        alert('נא להזין לפחות שם פרויקט ותיאור');
+        return;
+      }
+      
+      // הפעלת אינדיקטור טעינה
+      document.getElementById('analyze-btn').textContent = 'מנתח...';
+      document.getElementById('analyze-btn').disabled = true;
+      
+      try {
+        // ניתוח המידע מהקבצים
+        const filesInfo = await fileManager.prepareFilesInfo(fileUsage);
+        
+        // התאמת הסיכונים לפי מידע שהוזן
+        const adjustedRisks = [...predefinedRisks];
+        
+        // לוגיקה פשוטה להתאמת הסיכונים לפי מילות מפתח
+        const fullText = [projectDesc, curriculum, lte, filesInfo.textContent].join(' ');
+        
+        const keywords = {
+          "תוכן": ["תוכן", "תכנים", "מידע", "ידע", "בינה מלאכותית"],
+          "כשירות": ["כשירות", "הכשרה", "מורים", "צוות", "מיומנות"],
+          "מקצוענות": ["מקצועיות", "מומחיות", "ידע", "ניסיון"],
+          "ארגון": ["ארגון", "ניהול", "תכנון", "מבנה", "תפקידים"],
+          "תשתיות": ["תשתית", "טכנולוגיה", "ציוד", "מחשבים", "רשת"]
+        };
+        
+        // חישוב התאמות פשוטות לסיכונים
+        adjustedRisks.forEach(risk => {
+          const categoryKeywords = keywords[risk.name.split(' ')[0]] || [];
+          let relevanceScore = 1.0; // ערך התחלתי ניטרלי
+          
+          // בדיקת מילות מפתח בטקסט המלא
+          categoryKeywords.forEach(keyword => {
+            if (fullText.includes(keyword)) {
+              relevanceScore += 0.1; // עלייה קטנה בציון הרלוונטיות
+            }
+          });
+          
+          // התאמת ערכי הסיכון
+          risk.probability = Math.min(10, Math.max(1, Math.round(risk.probability * relevanceScore)));
+          risk.impact = Math.min(10, Math.max(1, Math.round(risk.impact * relevanceScore)));
+          risk.severity = risk.probability * risk.impact;
         });
         
-        // הגדרת פונקציות ייצוא
+        // מיון הסיכונים לפי חומרה
+        adjustedRisks.sort((a, b) => b.severity - a.severity);
+        
+        // הכנת תוכן הדוח
+        const resultHTML = generateTabsContent(projectName, adjustedRisks, filesInfo);
+        
+        // הצגת התוצאות
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = resultHTML;
+        resultDiv.style.display = 'block';
+        
+        // הוספת מאזיני אירועים ללשוניות
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', function() {
+            // הסרת המחלקה 'active' מכל הלשוניות
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            // הוספת המחלקה 'active' ללשונית הנוכחית
+            this.classList.add('active');
+            
+            // הסתרת כל התוכן של הלשוניות
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            
+            // הצגת התוכן של הלשונית שנבחרה
+            const tabId = this.getAttribute('data-tab') + '-tab';
+            document.getElementById(tabId).style.display = 'block';
+          });
+        });
+        
+        // הוספת מאזיני אירועים לכפתורי הייצוא
         document.getElementById('export-csv').addEventListener('click', function() {
-          downloadFile(report.csv, 'risk-analysis.csv', 'text/csv');
+          const csvContent = generateCSV(adjustedRisks);
+          downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-8');
         });
         
         document.getElementById('export-json').addEventListener('click', function() {
-          downloadFile(report.json, 'risk-analysis.json', 'application/json');
+          const jsonContent = JSON.stringify(adjustedRisks, null, 2);
+          downloadFile(jsonContent, projectName + '-risk-analysis.json', 'application/json');
         });
         
-        document.getElementById('print-table').addEventListener('click', function() {
+        document.getElementById('print').addEventListener('click', function() {
           window.print();
         });
-      });
-      
-      // פונקציה להורדת קובץ
-      function downloadFile(content, fileName, contentType) {
-        const a = document.createElement("a");
-        const file = new Blob([content], { type: contentType });
-        a.href = URL.createObjectURL(file);
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(a.href);
+        
+      } catch (error) {
+        console.error('שגיאה בניתוח:', error);
+        alert('אירעה שגיאה בניתוח הסיכונים. נא לנסות שוב.');
+      } finally {
+        // החזרת הכפתור למצב הרגיל
+        document.getElementById('analyze-btn').textContent = 'נתח סיכונים';
+        document.getElementById('analyze-btn').disabled = false;
       }
     });
   </script>
