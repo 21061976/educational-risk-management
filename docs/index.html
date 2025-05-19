@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>בוט לניהול סיכוני אסדרת חדשנות חינוכית</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>בוט לניהול סיכוני אסדרת חדשנות חינוכית</h1>
+    
+    <div class="form-section">
+      <h2>הזנת פרטי הפרויקט</h2>
+      
+      <div class="form-group">
+        <label for="project-name">שם הפרויקט:</label>
+        <input type="text" id="project-name" placeholder="הכנס את שם הפרויקט">
+      </div>
+      
+      <div class="form-group">
+        <label for="project-description">תיאור הפרויקט:</label>
+        <textarea id="project-description" placeholder="תאר את הפרויקט בפירוט, כולל מאפייניו העיקריים"></textarea>
+      </div>
+      
+      <h3>תרחיש עתידי רצוי:</h3>
+      
+      <div class="form-group">
+        <label for="curriculum">תוכנית לימודים:</label>
+        <textarea id="curriculum" placeholder="תאר את תוכנית הלימודים המוצעת בפרויקט"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="lte">למידה, הוראה והערכה:</label>
+        <textarea id="lte" placeholder="תאר את תהליכי הלמידה, ההוראה וההערכה בפרויקט"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="infrastructure">תשתיות פיזיות וטכנולוגיות:</label>
+        <textarea id="infrastructure" placeholder="תאר את התשתיות הפיזיות והטכנולוגיות הנדרשות בפרויקט"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="planning">תכנון וארגון:</label>
+        <textarea id="planning" placeholder="תאר את מבנה הארגון והתכנון בפרויקט"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="stakeholders">בעלי עניין ושותפויות:</label>
+        <textarea id="stakeholders" placeholder="פרט את בעלי העניין והשותפויות הנדרשות בפרויקט"></textarea>
+      </div>
+      
+      <button id="analyze-button">נתח סיכונים</button>
+    </div>
+    
+    <div class="result-section" id="result-section" style="display: none;">
+      <h2>תוצאות ניתוח סיכונים</h2>
+      
+      <div id="risks-table-container"></div>
+      
+      <div class="export-buttons">
+        <button id="export-csv">ייצוא ל-CSV</button>
+        <button id="export-json">ייצוא ל-JSON</button>
+        <button id="print-table">הדפסה</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="riskBot.js"></script>
+  <script>
+    document.getElementById('analyze-button').addEventListener('click', function() {
+      // איסוף נתוני הפרויקט מהטופס
+      const projectData = {
+        name: document.getElementById('project-name').value,
+        description: document.getElementById('project-description').value,
+        curriculum: document.getElementById('curriculum').value,
+        lte: document.getElementById('lte').value,
+        infrastructure: document.getElementById('infrastructure').value,
+        planning: document.getElementById('planning').value,
+        stakeholders: document.getElementById('stakeholders').value
+      };
+      
+      // יצירת מופע של הבוט
+      const bot = new RiskAssessmentBot();
+      
+      // קריאת מסמך הפרויקט
+      bot.readProjectDocument(projectData);
+      
+      // זיהוי סיכונים
+      bot.identifyRisks();
+      
+      // ניתוח סיכונים
+      bot.analyzeRisks();
+      
+      // הצלבה עם רגולציה קיימת
+      bot.matchWithExistingRegulations();
+      
+      // הפקת דוח סיכונים
+      const report = bot.generateRiskReport();
+      
+      // הצגת טבלת הסיכונים
+      document.getElementById('risks-table-container').innerHTML = report.html;
+      
+      // הצגת אזור התוצאות
+      document.getElementById('result-section').style.display = 'block';
+      
+      // הוספת צבעים לפי חומרת סיכון
+      const rows = document.querySelectorAll('.risk-table tbody tr');
+      rows.forEach(row => {
+        const severityCell = row.cells[6];
+        const severityValue = parseInt(severityCell.textContent);
+        
+        if (severityValue >= 15) {
+          row.classList.add('high-severity');
+        } else if (severityValue >= 8) {
+          row.classList.add('medium-severity');
+        }
+      });
+      
+      // הגדרת פונקציות ייצוא
+      document.getElementById('export-csv').addEventListener('click', function() {
+        const csvContent = report.csv;
+        downloadFile(csvContent, 'risk-analysis.csv', 'text/csv');
+      });
+      
+      document.getElementById('export-json').addEventListener('click', function() {
+        const jsonContent = report.json;
+        downloadFile(jsonContent, 'risk-analysis.json', 'application/json');
+      });
+      
+      document.getElementById('print-table').addEventListener('click', function() {
+        window.print();
+      });
+    });
+    
+    // פונקציה להורדת קובץ
+    function downloadFile(content, fileName, contentType) {
+      const a = document.createElement("a");
+      const file = new Blob([content], { type: contentType });
+      a.href = URL.createObjectURL(file);
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+</body>
+</html>
