@@ -262,3 +262,307 @@ class RiskAssessmentBot {
     ].join(' ');
     
     // ניתוח סיכונים ספציפיים לפרויקט
+// הוספת יכולות עבודה עם קבצים
+class FileManager {
+  constructor() {
+    this.files = [];
+    this.maxFileSize = 5 * 1024 * 1024; // 5MB
+    this.allowedTypes = [
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain'
+    ];
+  }
+  
+  // הוספת קובץ למערכת
+  addFile(file) {
+    return new Promise((resolve, reject) => {
+      // בדיקת גודל קובץ
+      if (file.size > this.maxFileSize) {
+        reject(`הקובץ ${file.name} גדול מדי. גודל מקסימלי הוא 5MB.`);
+        return;
+      }
+      
+      // בדיקת סוג קובץ
+      if (!this.allowedTypes.includes(file.type) && 
+          !this.allowedTypes.some(type => file.name.endsWith(type.split('/')[1]))) {
+        reject(`סוג הקובץ ${file.name} אינו נתמך. הסוגים הנתמכים הם: PDF, Word, PowerPoint, TXT.`);
+        return;
+      }
+      
+      // קריאת הקובץ
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        this.files.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          content: event.target.result
+        });
+        resolve(file);
+      };
+      
+      reader.onerror = () => {
+        reject(`שגיאה בקריאת הקובץ ${file.name}.`);
+      };
+      
+      // קריאת הקובץ כטקסט או כבינארי בהתאם לסוג
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
+    });
+  }
+  
+  // הסרת קובץ
+  removeFile(index) {
+    if (index >= 0 && index < this.files.length) {
+      this.files.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+  
+  // מיצוי טקסט מקבצים
+  extractTextFromFiles() {
+    const textContents = [];
+    
+    this.files.forEach(file => {
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        textContents.push(file.content);
+      } else {
+        // לקבצים שאינם טקסט - נוסיף לוגיקה בהמשך
+        // בינתיים נשתמש רק בשמות הקבצים
+        textContents.push(`קובץ: ${file.name}`);
+      }
+    });
+    
+    return textContents.join('\n\n');
+  }
+  
+  // עדכון טבלת הקבצים בממשק
+  updateFileList(elementId) {
+    const fileListElement = document.getElementById(elementId);
+    fileListElement.innerHTML = '';
+    
+    this.files.forEach((file, index) => {
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      
+      // המרת גודל קובץ למבנה קריא
+      const fileSizeDisplay = this.formatFileSize(file.size);
+      
+      fileItem.innerHTML = `
+        <div class="file-name">${file.name}</div>
+        <div class="file-size">${fileSizeDisplay}</div>
+        <div class="file-remove" data-index="${index}">×</div>
+      `;
+      
+      fileListElement.appendChild(fileItem);
+      
+      // הוספת אירוע להסרת קובץ
+      fileItem.querySelector('.file-remove').addEventListener('click', (event) => {
+        const fileIndex = parseInt(event.target.getAttribute('data-index'));
+        this.removeFile(fileIndex);
+        this.updateFileList(elementId);
+      });
+    });
+  }
+  
+  // המרת גודל קובץ ליחידות קריאות
+  formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' bytes';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+    else return (bytes / 1048576).toFixed(2) + ' MB';
+  }
+  
+  // קבלת מידע רלוונטי מהקבצים לניתוח סיכונים
+  getRelevantContentForRiskAnalysis() {
+    let relevantContent = '';
+    
+    // שליפת מילות מפתח רלוונטיות מהקבצים
+    const keywordsToExtract = [
+      'סיכון', 'סיכונים', 'אתגר', 'אתגרים', 'קושי', 'קשיים',
+      'בינה מלאכותית', 'ב"מ', 'טכנולוגיה', 'חדשנות', 'למידה',
+      'הוראה', 'פדגוגיה', 'תכנים', 'תשתית', 'תשתיות', 'תכנון',
+      'ארגון', 'צוות', 'הכשרה', 'מקצוענות', 'הערכה', 'פיתוח'
+    ];
+    
+    this.files.forEach(file => {
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        // חיפוש משפטים עם מילות מפתח
+        const content = file.content;
+        const sentences = content.split(/[.!?]+/);
+        
+        sentences.forEach(sentence => {
+          if (keywordsToExtract.some(keyword => sentence.includes(keyword))) {
+            relevantContent += sentence.trim() + '. ';
+          }
+        });
+      }
+    });
+    
+    return relevantContent;
+  }
+}
+
+// עדכון מחלקת RiskAssessmentBot לתמיכה בקבצים
+class ExtendedRiskBot extends RiskAssessmentBot {
+  constructor() {
+    super();
+    this.fileManager = new FileManager();
+  }
+  
+  // ניתוח מורחב הכולל קבצים
+  analyzeWithFiles(projectData, useFilesOption) {
+    // קריאת מסמך הפרויקט
+    this.readProjectDocument(projectData);
+    
+    // זיהוי סיכונים
+    this.identifyRisks();
+    
+    // שילוב מידע מקבצים בהתאם לאפשרות שנבחרה
+    let additionalContext = '';
+    
+    if (useFilesOption === 'extract' && this.fileManager.files.length > 0) {
+      additionalContext = this.fileManager.getRelevantContentForRiskAnalysis();
+    }
+    
+    // יצירת תיאור מלא של הפרויקט לצורך ניתוח
+    const fullDescription = [
+      this.projectData.description,
+      this.projectData.curriculum,
+      this.projectData.lte,
+      this.projectData.infrastructure,
+      this.projectData.planning,
+      this.projectData.stakeholders,
+      additionalContext // הוספת המידע מהקבצים
+    ].join(' ');
+    
+    // ניתוח סיכונים עם המידע המשולב
+    this.riskTable.analyzeProjectRisks(fullDescription);
+    
+    // הצלבה עם רגולציה קיימת
+    this.matchWithExistingRegulations();
+    
+    // החזרת דוח מורחב
+    return this.generateExtendedReport(useFilesOption);
+  }
+  
+  // יצירת דוח מורחב
+  generateExtendedReport(useFilesOption) {
+    const standardReport = {
+      html: this.riskTable.generateRiskTableHTML(),
+      csv: this.riskTable.generateRiskTableCSV(),
+      json: this.riskTable.generateRiskTableJSON()
+    };
+    
+    // הוספת מידע על קבצים שנותחו
+    let fileInfo = '';
+    if (this.fileManager.files.length > 0) {
+      fileInfo = `<div class="file-analysis-info">
+        <h4>קבצים ששימשו לניתוח (${this.fileManager.files.length}):</h4>
+        <ul>
+          ${this.fileManager.files.map(file => `<li>${file.name} (${this.fileManager.formatFileSize(file.size)})</li>`).join('')}
+        </ul>
+        <p>שיטת ניתוח קבצים: ${this.getFileUseDescription(useFilesOption)}</p>
+      </div>`;
+    }
+    
+    // יצירת מבנה לשוניות לדוח המורחב
+    const tabsHTML = `
+      <div class="expanded-report">
+        ${fileInfo}
+        <div class="report-tabs">
+          <div class="report-tab active" data-tab="risk-table">טבלת סיכונים</div>
+          <div class="report-tab" data-tab="file-content">תוכן קבצים רלוונטי</div>
+          <div class="report-tab" data-tab="summary">סיכום והמלצות</div>
+        </div>
+        
+        <div class="tab-content active" id="risk-table-content">
+          ${standardReport.html}
+        </div>
+        
+        <div class="tab-content" id="file-content-content">
+          <h3>תוכן רלוונטי מהקבצים שהועלו:</h3>
+          <div class="file-content-preview">
+            ${this.fileManager.files.length > 0 ? this.fileManager.getRelevantContentForRiskAnalysis() || 'לא נמצא תוכן רלוונטי לניתוח סיכונים בקבצים שהועלו.' : 'לא הועלו קבצים לניתוח.'}
+          </div>
+        </div>
+        
+        <div class="tab-content" id="summary-content">
+          <h3>סיכום ממצאים והמלצות:</h3>
+          <div>
+            <p><strong>הסיכונים העיקריים שזוהו:</strong></p>
+            <ul>
+              ${this.getTopRisks(3).map(risk => `
+                <li>
+                  <strong>${risk.category}:</strong> ${risk.description} 
+                  (חומרה: ${risk.severity}, הסתברות: ${risk.probability}, נזק צפוי: ${risk.impact})
+                </li>
+              `).join('')}
+            </ul>
+            
+            <p><strong>המלצות עיקריות:</strong></p>
+            <ul>
+              ${this.getTopRecommendations().map(rec => `<li>${rec}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    return {
+      ...standardReport,
+      extendedHTML: tabsHTML
+    };
+  }
+  
+  // קבלת תיאור לשיטת השימוש בקבצים
+  getFileUseDescription(useFilesOption) {
+    switch(useFilesOption) {
+      case 'extract':
+        return 'מיצוי מידע רלוונטי לניתוח סיכונים';
+      case 'compare':
+        return 'השוואה לפרויקטים קודמים';
+      case 'reference':
+        return 'שימוש כחומר רקע בלבד';
+      default:
+        return 'לא צוין';
+    }
+  }
+  
+  // קבלת הסיכונים העיקריים
+  getTopRisks(count) {
+    return this.riskTable.projectRisks.slice(0, count);
+  }
+  
+  // קבלת ההמלצות העיקריות
+  getTopRecommendations() {
+    const recommendations = [];
+    
+    // איסוף אסטרטגיות מיטיגציה מהסיכונים העיקריים
+    this.getTopRisks(3).forEach(risk => {
+      if (risk.mitigationStrategies && risk.mitigationStrategies.length > 0) {
+        risk.mitigationStrategies.forEach(strategy => {
+          if (!recommendations.includes(strategy)) {
+            recommendations.push(strategy);
+          }
+        });
+      }
+    });
+    
+    // הוספת המלצות כלליות
+    recommendations.push(
+      'מומלץ להקים צוות ייעודי למעקב אחר סיכונים ויישום אסטרטגיות התמודדות',
+      'יש לתעד את תהליך ניהול הסיכונים ולעדכן את הניתוח באופן תקופתי'
+    );
+    
+    return recommendations.slice(0, 5); // החזרת 5 המלצות עיקריות
+  }
+}
