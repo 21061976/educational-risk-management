@@ -268,10 +268,6 @@
     URL.revokeObjectURL(a.href);
   }
   
-  document.addEventListener('DOMContentLoaded', function() {
-    loadSavedApiKey(); // טעינת מפתח API שמור
-  });
-
   // פונקציה לניתוח באמצעות Claude 3.5 - גישה ישירה
   async function analyzeWithClaude(projectData, filesInfo) {
     try {
@@ -433,6 +429,11 @@
     }
   }
   
+  // טעינת המפתח בעת טעינת הדף
+  document.addEventListener('DOMContentLoaded', function() {
+    loadSavedApiKey();
+  });
+  
   // אירוע ללחיצה על כפתור ניתוח
   document.getElementById('analyze-btn').addEventListener('click', async function() {
     // איסוף מידע מהטופס
@@ -550,8 +551,7 @@
       
       // הכנת תוכן הדוח
       const resultHTML = generateTabsContent(projectName, adjustedRisks, filesInfo);
-      
-      // הצגת התוצאות
+     // הצגת התוצאות
       const resultDiv = document.getElementById('result');
       resultDiv.innerHTML = resultHTML;
       resultDiv.style.display = 'block';
@@ -572,11 +572,12 @@
           document.getElementById(tabId).style.display = 'block';
         });
       });
-// הוספת מאזיני אירועים לכפתורי הייצוא
-document.getElementById('export-csv').addEventListener('click', function() {
-  const csvContent = generateCSV(adjustedRisks);
-  downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-8');
-});
+      
+      // הוספת מאזיני אירועים לכפתורי הייצוא
+      document.getElementById('export-csv').addEventListener('click', function() {
+        const csvContent = generateCSV(adjustedRisks);
+        downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-8');
+      });
       
       document.getElementById('export-json').addEventListener('click', function() {
         const jsonContent = JSON.stringify(adjustedRisks, null, 2);
