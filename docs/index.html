@@ -572,12 +572,11 @@
           document.getElementById(tabId).style.display = 'block';
         });
       });
-      
-      // הוספת מאזיני אירועים לכפתורי הייצוא
-      document.getElementById('export-csv').addEventListener('click', function() {
-        const csvContent = generateCSV(adjustedRisks);
-        downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-8');
-      });
+// הוספת מאזיני אירועים לכפתורי הייצוא
+document.getElementById('export-csv').addEventListener('click', function() {
+  const csvContent = generateCSV(adjustedRisks);
+  downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-8');
+});
       
       document.getElementById('export-json').addEventListener('click', function() {
         const jsonContent = JSON.stringify(adjustedRisks, null, 2);
