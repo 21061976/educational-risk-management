@@ -159,6 +159,86 @@
       a.click();
       URL.revokeObjectURL(a.href);
     }
-  </script>
-</body>
-</html>
+ <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // אירוע ללחיצה על כפתור ניתוח
+    document.getElementById('analyze-button').addEventListener('click', function() {
+      // איסוף נתוני הפרויקט מהטופס
+      const projectData = {
+        name: document.getElementById('project-name').value,
+        description: document.getElementById('project-description').value,
+        curriculum: document.getElementById('curriculum').value,
+        lte: document.getElementById('lte').value,
+        infrastructure: document.getElementById('infrastructure').value,
+        planning: document.getElementById('planning').value,
+        stakeholders: document.getElementById('stakeholders').value
+      };
+      
+      // בדיקה שהוזנו נתונים מינימליים
+      if (!projectData.name || !projectData.description) {
+        alert('יש להזין לפחות שם פרויקט ותיאור כללי');
+        return;
+      }
+      
+      // יצירת מופע של הבוט
+      const bot = new RiskAssessmentBot();
+      
+      // קריאת מסמך הפרויקט
+      bot.readProjectDocument(projectData);
+      
+      // זיהוי סיכונים
+      bot.identifyRisks();
+      
+      // ניתוח סיכונים
+      bot.analyzeRisks();
+      
+      // הצלבה עם רגולציה קיימת
+      bot.matchWithExistingRegulations();
+      
+      // הפקת דוח סיכונים
+      const report = bot.generateRiskReport();
+      
+      // הצגת טבלת הסיכונים
+      document.getElementById('risks-table-container').innerHTML = report.html;
+      
+      // הצגת אזור התוצאות
+      document.getElementById('result-section').style.display = 'block';
+      
+      // הוספת צבעים לפי חומרת סיכון
+      const rows = document.querySelectorAll('.risk-table tbody tr');
+      rows.forEach(row => {
+        const severityCell = row.cells[6];
+        const severityValue = parseInt(severityCell.textContent);
+        
+        if (severityValue >= 15) {
+          row.classList.add('high-severity');
+        } else if (severityValue >= 8) {
+          row.classList.add('medium-severity');
+        }
+      });
+      
+      // הגדרת פונקציות ייצוא
+      document.getElementById('export-csv').addEventListener('click', function() {
+        downloadFile(report.csv, 'risk-analysis.csv', 'text/csv');
+      });
+      
+      document.getElementById('export-json').addEventListener('click', function() {
+        downloadFile(report.json, 'risk-analysis.json', 'application/json');
+      });
+      
+      document.getElementById('print-table').addEventListener('click', function() {
+        window.print();
+      });
+    });
+    
+    // פונקציה להורדת קובץ
+    function downloadFile(content, fileName, contentType) {
+      const a = document.createElement("a");
+      const file = new Blob([content], { type: contentType });
+      a.href = URL.createObjectURL(file);
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  });
+</script>
