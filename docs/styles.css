@@ -1,0 +1,120 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 20px;
+  direction: rtl;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1, h2, h3 {
+  color: #0056b3;
+}
+
+.form-section {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 150px;
+}
+
+button {
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #003d82;
+}
+
+.result-section {
+  margin-top: 30px;
+}
+
+.risk-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.risk-table th, .risk-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: right;
+}
+
+.risk-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.risk-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.risk-table tr:hover {
+  background-color: #eaeaea;
+}
+
+.high-severity {
+  background-color: #ffcccc !important;
+}
+
+.medium-severity {
+  background-color: #fff2cc !important;
+}
+
+.export-buttons {
+  margin-top: 20px;
+}
+
+.export-buttons button {
+  margin-left: 10px;
+}
+
+@media print {
+  button, .form-section {
+    display: none;
+  }
+  
+  body, .container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  h1 {
+    text-align: center;
+  }
+}
