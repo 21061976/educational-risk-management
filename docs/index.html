@@ -1,522 +1,554 @@
-<script>
-  // מידע קבוע לסיכונים
-  const predefinedRisks = [
-    { id: 1, name: "תוכן, תכנים", description: "היווצרות גדולה יותר של תכנים מבוססי בינה מלאכותית", impacts: "הצורך למנגנוני בקרה לאיכות, השטחה של התוצר", severity: 24, probability: 6, impact: 4, strategies: ["פיתוח מנגנוני בקרת איכות מובנים", "הגדרת סטנדרטים ברורים לאיכות התוצרים", "ביקורת עמיתים על תכנים לפני אישורם"] },
-    { id: 2, name: "כשירות צוות בבינה מלאכותית", description: "עלייה בדרישה לכשירות", impacts: "הכשרה של צוותים, צורך למודעות להשלכות אתיות", severity: 21, probability: 7, impact: 3, strategies: ["פיתוח תוכנית הכשרה מקיפה", "הקצאת שעות ייעודיות ללמידה והתנסות", "יצירת קהילת למידה מקצועית"] },
-    { id: 3, name: "מקצוענות", description: "אובדן ידע ומקצוענות", impacts: "ירידה באמון באנשי מקצוע, בריחת אנשי מקצוע לתחומים אחרים", severity: 18, probability: 3, impact: 6, strategies: ["שילוב מומחיות אנושית כחלק מובנה בתהליכים", "תיעוד ושימור ידע מקצועי", "הגדרת תחומים בהם שיקול דעת אנושי הוא הכרחי"] },
-    { id: 4, name: "ארגון ותכנון", description: "שיבוש של תיאורי תפקידים", impacts: "החלשות מקום הדיאלוג הבין צוותי", severity: 8, probability: 2, impact: 4, strategies: ["הגדרה מחדש של תפקידים ותחומי אחריות", "יצירת מנגנונים לחיזוק התקשורת הבין-צוותית"] },
-    { id: 5, name: "תשתיות", description: "תלות בתשתיות תקשוב חזקות", impacts: "צורך לתקצוב רכישה ותחזוקה, תלות יתר בטכנולוגיה", severity: 6, probability: 3, impact: 2, strategies: ["תכנון תקציבי רב-שנתי", "פיתוח מענים חלופיים למקרה של תקלות"] }
-  ];
+<!DOCTYPE html>
+<html>
+<head>
+  <title>בוט ניהול סיכונים - עם אפשרות העלאת קבצים</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      margin: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1, h2, h3 {
+      color: #0056b3;
+    }
+    
+    button {
+      padding: 10px 15px;
+      background-color: #0056b3;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+    
+    button:hover {
+      background-color: #003d82;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: none;
+    }
+    
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    .risk-table th, .risk-table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: right;
+    }
+    
+    .risk-table th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    
+    .risk-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    .high-risk {
+      background-color: #ffcccc !important;
+    }
+    
+    .medium-risk {
+      background-color: #fff2cc !important;
+    }
+    
+    /* סגנונות עבור חלק העלאת הקבצים */
+    .file-upload-container {
+      border: 2px dashed #ccc;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+      text-align: center;
+      background-color: #f9f9f9;
+    }
+    
+    .file-upload-container:hover {
+      border-color: #0056b3;
+    }
+    
+    .file-list {
+      margin-top: 15px;
+      text-align: right;
+    }
+    
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      background-color: #e9f7fe;
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+    
+    .file-name {
+      flex-grow: 1;
+    }
+    
+    .file-size {
+      margin: 0 10px;
+      color: #666;
+    }
+    
+    .file-remove {
+      color: #ff4d4d;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+    
+    .tab {
+      padding: 10px 15px;
+      cursor: pointer;
+      margin-left: 5px;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 5px 5px 0 0;
+    }
+    
+    .tab.active {
+      background-color: #f5f5f5;
+      border-color: #ccc;
+      border-bottom-color: #f5f5f5;
+      font-weight: bold;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 0 0 5px 5px;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .file-preview {
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    
+    small {
+      color: #666;
+      font-size: 12px;
+      display: block;
+      margin-top: 5px;
+    }
+    
+    .export-buttons {
+      margin-top: 20px;
+    }
+    
+    .export-buttons button {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>בוט ניהול סיכוני אסדרת חדשנות חינוכית</h1>
   
-  // ניהול קבצים
-  class FileManager {
-    constructor() {
-      this.files = [];
-      this.maxFileSize = 5 * 1024 * 1024; // 5MB
-    }
+  <div class="form-section">
+    <h2>הזנת פרטי הפרויקט</h2>
     
-    // הוספת קובץ
-    addFile(file) {
-      // בדיקת גודל הקובץ
-      if (file.size > this.maxFileSize) {
-        alert(`הקובץ ${file.name} גדול מדי. הגודל המקסימלי הוא 5MB.`);
-        return false;
+    <div class="form-group">
+      <label for="project-name">שם הפרויקט:</label>
+      <input type="text" id="project-name" placeholder="הכנס את שם הפרויקט">
+    </div>
+    
+    <div class="form-group">
+      <label for="project-desc">תיאור הפרויקט:</label>
+      <textarea id="project-desc" placeholder="תאר את הפרויקט בפירוט, כולל מאפייניו העיקריים"></textarea>
+    </div>
+    
+    <h3>תרחיש עתידי רצוי:</h3>
+    
+    <div class="form-group">
+      <label for="curriculum">תוכנית לימודים:</label>
+      <textarea id="curriculum" placeholder="תאר את תוכנית הלימודים המוצעת בפרויקט"></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="lte">למידה, הוראה והערכה:</label>
+      <textarea id="lte" placeholder="תאר את תהליכי הלמידה, ההוראה וההערכה בפרויקט"></textarea>
+    </div>
+    
+    <h3>העלאת קבצים וחומרי רקע:</h3>
+    
+    <div class="form-group">
+      <label for="file-upload">העלאת מסמכי רקע מקצועיים:</label>
+      <div class="file-upload-container">
+        <input type="file" id="file-upload" multiple accept=".txt,.pdf,.doc,.docx">
+        <small>ניתן להעלות קבצי טקסט (.txt), PDF, או מסמכי Word. גודל מקסימלי: 5MB לקובץ.</small>
+      </div>
+      <div id="file-list" class="file-list"></div>
+    </div>
+    
+    <div class="form-group">
+      <label for="file-usage">כיצד להשתמש בקבצים שהועלו:</label>
+      <select id="file-usage" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+        <option value="reference">שימוש כחומר רקע לניתוח</option>
+        <option value="extract">מיצוי מידע רלוונטי לסיכונים</option>
+        <option value="compare">השוואה לפרויקטים קודמים</option>
+      </select>
+    </div>
+    
+    <button id="analyze-btn">נתח סיכונים</button>
+  </div>
+  
+  <div id="result" class="result"></div>
+  
+  <script>
+    // מידע קבוע לסיכונים
+    const predefinedRisks = [
+      { id: 1, name: "תוכן, תכנים", description: "היווצרות גדולה יותר של תכנים מבוססי בינה מלאכותית", impacts: "הצורך למנגנוני בקרה לאיכות, השטחה של התוצר", severity: 24, probability: 6, impact: 4, strategies: ["פיתוח מנגנוני בקרת איכות מובנים", "הגדרת סטנדרטים ברורים לאיכות התוצרים", "ביקורת עמיתים על תכנים לפני אישורם"] },
+      { id: 2, name: "כשירות צוות בבינה מלאכותית", description: "עלייה בדרישה לכשירות", impacts: "הכשרה של צוותים, צורך למודעות להשלכות אתיות", severity: 21, probability: 7, impact: 3, strategies: ["פיתוח תוכנית הכשרה מקיפה", "הקצאת שעות ייעודיות ללמידה והתנסות", "יצירת קהילת למידה מקצועית"] },
+      { id: 3, name: "מקצוענות", description: "אובדן ידע ומקצוענות", impacts: "ירידה באמון באנשי מקצוע, בריחת אנשי מקצוע לתחומים אחרים", severity: 18, probability: 3, impact: 6, strategies: ["שילוב מומחיות אנושית כחלק מובנה בתהליכים", "תיעוד ושימור ידע מקצועי", "הגדרת תחומים בהם שיקול דעת אנושי הוא הכרחי"] },
+      { id: 4, name: "ארגון ותכנון", description: "שיבוש של תיאורי תפקידים", impacts: "החלשות מקום הדיאלוג הבין צוותי", severity: 8, probability: 2, impact: 4, strategies: ["הגדרה מחדש של תפקידים ותחומי אחריות", "יצירת מנגנונים לחיזוק התקשורת הבין-צוותית"] },
+      { id: 5, name: "תשתיות", description: "תלות בתשתיות תקשוב חזקות", impacts: "צורך לתקצוב רכישה ותחזוקה, תלות יתר בטכנולוגיה", severity: 6, probability: 3, impact: 2, strategies: ["תכנון תקציבי רב-שנתי", "פיתוח מענים חלופיים למקרה של תקלות"] }
+    ];
+    
+    // ניהול קבצים
+    class FileManager {
+      constructor() {
+        this.files = [];
+        this.maxFileSize = 5 * 1024 * 1024; // 5MB
       }
       
-      // בדיקה אם הקובץ כבר קיים
-      if (this.files.some(f => f.name === file.name)) {
-        alert(`הקובץ ${file.name} כבר קיים ברשימה.`);
-        return false;
-      }
-      
-      // הוספת הקובץ לרשימה
-      this.files.push(file);
-      this.updateFileList();
-      return true;
-    }
-    
-    // הסרת קובץ
-    removeFile(fileName) {
-      const index = this.files.findIndex(f => f.name === fileName);
-      if (index !== -1) {
-        this.files.splice(index, 1);
+      // הוספת קובץ
+      addFile(file) {
+        // בדיקת גודל הקובץ
+        if (file.size > this.maxFileSize) {
+          alert(`הקובץ ${file.name} גדול מדי. הגודל המקסימלי הוא 5MB.`);
+          return false;
+        }
+        
+        // בדיקה אם הקובץ כבר קיים
+        if (this.files.some(f => f.name === file.name)) {
+          alert(`הקובץ ${file.name} כבר קיים ברשימה.`);
+          return false;
+        }
+        
+        // הוספת הקובץ לרשימה
+        this.files.push(file);
         this.updateFileList();
         return true;
       }
-      return false;
-    }
-    
-    // עדכון רשימת הקבצים בממשק
-    updateFileList() {
-      const fileListElement = document.getElementById('file-list');
-      fileListElement.innerHTML = '';
       
-      this.files.forEach(file => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        
-        const fileSizeDisplay = this.formatFileSize(file.size);
-        
-        fileItem.innerHTML = `
-          <div class="file-name">${file.name}</div>
-          <div class="file-size">${fileSizeDisplay}</div>
-          <div class="file-remove" data-filename="${file.name}">×</div>
-        `;
-        
-        fileListElement.appendChild(fileItem);
-      });
-      
-      // הוספת מאזיני אירועים לכפתורי ההסרה
-      document.querySelectorAll('.file-remove').forEach(button => {
-        button.addEventListener('click', event => {
-          const fileName = event.target.getAttribute('data-filename');
-          this.removeFile(fileName);
-        });
-      });
-    }
-    
-    // המרת גודל קובץ לפורמט קריא
-    formatFileSize(bytes) {
-      if (bytes < 1024) return bytes + ' bytes';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-    }
-    
-    // קריאת תוכן קובץ טקסט
-    readTextFile(file) {
-      return new Promise((resolve, reject) => {
-        if (file.type === 'text/plain') {
-          const reader = new FileReader();
-          reader.onload = event => {
-            resolve(event.target.result);
-          };
-          reader.onerror = () => {
-            reject(new Error(`שגיאה בקריאת הקובץ ${file.name}`));
-          };
-          reader.readAsText(file);
-        } else {
-          resolve(`[תוכן הקובץ ${file.name} אינו נתמך לקריאה ישירה]`);
+      // הסרת קובץ
+      removeFile(fileName) {
+        const index = this.files.findIndex(f => f.name === fileName);
+        if (index !== -1) {
+          this.files.splice(index, 1);
+          this.updateFileList();
+          return true;
         }
-      });
-    }
-    
-    // הכנת מידע מהקבצים לניתוח
-    async prepareFilesInfo(usage) {
-      let result = {
-        summary: `קבצים שהועלו: ${this.files.length}`,
-        fileNames: this.files.map(f => f.name),
-        textContent: ''
-      };
+        return false;
+      }
       
-      // אם נבחרה אפשרות למיצוי מידע, קרא את תוכן קבצי הטקסט
-      if (usage === 'extract' || usage === 'reference') {
-        for (const file of this.files) {
+      // עדכון רשימת הקבצים בממשק
+      updateFileList() {
+        const fileListElement = document.getElementById('file-list');
+        fileListElement.innerHTML = '';
+        
+        this.files.forEach(file => {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'file-item';
+          
+          const fileSizeDisplay = this.formatFileSize(file.size);
+          
+          fileItem.innerHTML = `
+            <div class="file-name">${file.name}</div>
+            <div class="file-size">${fileSizeDisplay}</div>
+            <div class="file-remove" data-filename="${file.name}">×</div>
+          `;
+          
+          fileListElement.appendChild(fileItem);
+        });
+        
+        // הוספת מאזיני אירועים לכפתורי ההסרה
+        document.querySelectorAll('.file-remove').forEach(button => {
+          button.addEventListener('click', event => {
+            const fileName = event.target.getAttribute('data-filename');
+            this.removeFile(fileName);
+          });
+        });
+      }
+      
+      // המרת גודל קובץ לפורמט קריא
+      formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' bytes';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+      }
+      
+      // קריאת תוכן קובץ טקסט
+      readTextFile(file) {
+        return new Promise((resolve, reject) => {
           if (file.type === 'text/plain') {
-            try {
-              const content = await this.readTextFile(file);
-              result.textContent += `--- ${file.name} ---\n${content}\n\n`;
-            } catch (error) {
-              console.error(error);
+            const reader = new FileReader();
+            reader.onload = event => {
+              resolve(event.target.result);
+            };
+            reader.onerror = () => {
+              reject(new Error(`שגיאה בקריאת הקובץ ${file.name}`));
+            };
+            reader.readAsText(file);
+          } else {
+            resolve(`[תוכן הקובץ ${file.name} אינו נתמך לקריאה ישירה]`);
+          }
+        });
+      }
+      
+      // הכנת מידע מהקבצים לניתוח
+      async prepareFilesInfo(usage) {
+        let result = {
+          summary: `קבצים שהועלו: ${this.files.length}`,
+          fileNames: this.files.map(f => f.name),
+          textContent: ''
+        };
+        
+        // אם נבחרה אפשרות למיצוי מידע, קרא את תוכן קבצי הטקסט
+        if (usage === 'extract' || usage === 'reference') {
+          for (const file of this.files) {
+            if (file.type === 'text/plain') {
+              try {
+                const content = await this.readTextFile(file);
+                result.textContent += `--- ${file.name} ---\n${content}\n\n`;
+              } catch (error) {
+                console.error(error);
+              }
             }
           }
         }
+        
+        return result;
+      }
+    }
+    
+    // יצירת מופע של מנהל הקבצים
+    const fileManager = new FileManager();
+    
+    // הוספת מאזין אירועים לאזור העלאת הקבצים
+    document.getElementById('file-upload').addEventListener('change', event => {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      
+      for (let i = 0; i < files.length; i++) {
+        fileManager.addFile(files[i]);
       }
       
-      return result;
-    }
-  }
-  
-  // יצירת מופע של מנהל הקבצים
-  const fileManager = new FileManager();
-  
-  // הוספת מאזין אירועים לאזור העלאת הקבצים
-  document.getElementById('file-upload').addEventListener('change', event => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+      // איפוס שדה העלאת הקבצים כדי לאפשר העלאה חוזרת של אותו קובץ
+      event.target.value = '';
+    });
     
-    for (let i = 0; i < files.length; i++) {
-      fileManager.addFile(files[i]);
-    }
-    
-    // איפוס שדה העלאת הקבצים כדי לאפשר העלאה חוזרת של אותו קובץ
-    event.target.value = '';
-  });
-  
-  // פונקציה להכנת טבלת סיכונים
-  function generateRiskTable(risks) {
-    let tableHTML = `
-      <table class="risk-table">
-        <thead>
-          <tr>
-            <th>מס'</th>
-            <th>קטגוריה</th>
-            <th>תיאור הסיכון</th>
-            <th>השלכות</th>
-            <th>הסתברות (1-10)</th>
-            <th>נזק צפוי (1-10)</th>
-            <th>חומרת הסיכון</th>
-            <th>אסטרטגיות להתמודדות</th>
+    // פונקציה להכנת טבלת סיכונים
+    function generateRiskTable(risks) {
+      let tableHTML = `
+        <table class="risk-table">
+          <thead>
+            <tr>
+              <th>מס'</th>
+              <th>קטגוריה</th>
+              <th>תיאור הסיכון</th>
+              <th>השלכות</th>
+              <th>הסתברות (1-10)</th>
+              <th>נזק צפוי (1-10)</th>
+              <th>חומרת הסיכון</th>
+              <th>אסטרטגיות להתמודדות</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      risks.forEach(risk => {
+        const rowClass = risk.severity >= 15 ? 'high-risk' : 
+                         (risk.severity >= 8 ? 'medium-risk' : '');
+        
+        tableHTML += `
+          <tr class="${rowClass}">
+            <td>${risk.id}</td>
+            <td>${risk.name}</td>
+            <td>${risk.description}</td>
+            <td>${risk.impacts}</td>
+            <td>${risk.probability || '?'}</td>
+            <td>${risk.impact || '?'}</td>
+            <td>${risk.severity}</td>
+            <td>
+              <ul>
+                ${risk.strategies.map(s => `<li>${s}</li>`).join('')}
+              </ul>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-    `;
-    
-    risks.forEach(risk => {
-      const rowClass = risk.severity >= 15 ? 'high-risk' : 
-                       (risk.severity >= 8 ? 'medium-risk' : '');
-      
-      tableHTML += `
-        <tr class="${rowClass}">
-          <td>${risk.id}</td>
-          <td>${risk.name}</td>
-          <td>${risk.description}</td>
-          <td>${risk.impacts}</td>
-          <td>${risk.probability || '?'}</td>
-          <td>${risk.impact || '?'}</td>
-          <td>${risk.severity}</td>
-          <td>
-            <ul>
-              ${risk.strategies.map(s => `<li>${s}</li>`).join('')}
-            </ul>
-          </td>
-        </tr>
-      `;
-    });
-    
-    tableHTML += `
-        </tbody>
-      </table>
-    `;
-    
-    return tableHTML;
-  }
-  
-  // פונקציה להכנת תוכן לשוניות
-  function generateTabsContent(projectName, risks, filesInfo) {
-    return `
-      <h2>ניתוח סיכונים: ${projectName}</h2>
-      
-      <div class="tabs">
-        <div class="tab active" data-tab="risks">טבלת סיכונים</div>
-        <div class="tab" data-tab="files">מידע מקבצים</div>
-        <div class="tab" data-tab="summary">סיכום והמלצות</div>
-      </div>
-      
-      <div id="risks-tab" class="tab-content active">
-        ${generateRiskTable(risks)}
-      </div>
-      
-      <div id="files-tab" class="tab-content">
-        <h3>מידע מהקבצים שהועלו</h3>
-        ${filesInfo.fileNames.length > 0 ? 
-          `<p>קבצים שהועלו: ${filesInfo.fileNames.join(', ')}</p>
-           ${filesInfo.textContent ? 
-             `<h4>תוכן טקסט מהקבצים:</h4>
-              <div class="file-preview">${filesInfo.textContent}</div>` : 
-             '<p>אין תוכן טקסט שניתן להציג מהקבצים שהועלו.</p>'
-           }`
-          : '<p>לא הועלו קבצים לניתוח.</p>'
-        }
-      </div>
-      
-      <div id="summary-tab" class="tab-content">
-        <h3>סיכום ממצאים והמלצות</h3>
-        
-        <h4>הסיכונים העיקריים:</h4>
-        <ul>
-          ${risks.slice(0, 3).map(risk => 
-            `<li><strong>${risk.name}:</strong> ${risk.description} (חומרה: ${risk.severity})</li>`
-          ).join('')}
-        </ul>
-        
-        <h4>המלצות עיקריות:</h4>
-        <ul>
-          ${risks.slice(0, 3).flatMap(risk => 
-            risk.strategies.slice(0, 1).map(strategy => `<li>${strategy}</li>`)
-          ).join('')}
-          <li>מומלץ להקים צוות ייעודי למעקב אחר סיכונים ויישום אסטרטגיות התמודדות</li>
-          <li>יש לתעד את תהליך ניהול הסיכונים ולעדכן את הניתוח באופן תקופתי</li>
-        </ul>
-      </div>
-      
-      <div class="export-buttons">
-        <button id="export-csv">ייצוא ל-CSV</button>
-        <button id="export-json">ייצוא ל-JSON</button>
-        <button id="print">הדפסה</button>
-      </div>
-    `;
-  }
-  
-  // פונקציה לייצוא לפורמט CSV
-  function generateCSV(risks) {
-    let csv = "מספר,קטגוריה,תיאור הסיכון,השלכות,הסתברות,נזק צפוי,חומרת הסיכון,אסטרטגיות להתמודדות\n";
-    
-    risks.forEach(risk => {
-      csv += `${risk.id},"${risk.name}","${risk.description}","${risk.impacts}",${risk.probability},${risk.impact},${risk.severity},"${risk.strategies.join('; ')}"\n`;
-    });
-    
-    return csv;
-  }
-  
-  // פונקציה להורדת קובץ
-  function downloadFile(content, fileName, contentType) {
-    const a = document.createElement("a");
-    const file = new Blob([content], { type: contentType });
-    a.href = URL.createObjectURL(file);
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-  
-  // פונקציה לניתוח באמצעות Claude 3.5 - גישה ישירה
-  async function analyzeWithClaude(projectData, filesInfo) {
-    try {
-      // קבל את מפתח ה-API מהשדה
-      const apiKey = document.getElementById('api-key').value.trim();
-      
-      if (!apiKey) {
-        return {
-          error: true,
-          message: "נא להזין מפתח API תקף של Anthropic"
-        };
-      }
-      
-      // בנה את הפרומפט ל-Claude
-      const prompt = `
-      תנתח את הפרויקט החינוכי הבא ותזהה סיכונים פוטנציאליים בהטמעת בינה מלאכותית בחינוך.
-      
-      פרטי הפרויקט:
-      שם: ${projectData.name}
-      תיאור: ${projectData.description}
-      תוכנית לימודים: ${projectData.curriculum || 'לא צוין'}
-      למידה, הוראה והערכה: ${projectData.lte || 'לא צוין'}
-      
-      תוכן קבצים נוספים:
-      ${filesInfo.textContent || 'לא הועלו קבצים'}
-      
-      בצע ניתוח סיכונים הכולל את הקטגוריות הבאות:
-      1. תוכן ותכנים
-      2. כשירות צוות בבינה מלאכותית
-      3. מקצוענות
-      4. ארגון ותכנון
-      5. תשתיות
-      
-      לכל קטגוריה, ספק:
-      - תיאור קצר של הסיכון בקטגוריה זו בהקשר של הפרויקט המתואר
-      - השלכות אפשריות של הסיכון
-      - דירוג הסתברות (1-10)
-      - דירוג השפעה (1-10)
-      - חומרה כוללת (הסתברות × השפעה)
-      - אסטרטגיות להתמודדות (2-3 לכל קטגוריה)
-      
-      החזר את התשובה בפורמט JSON בדיוק לפי המבנה הבא:
-      {
-        "risks": [
-          {
-            "category": "שם הקטגוריה",
-            "description": "תיאור הסיכון",
-            "impacts": "השלכות הסיכון",
-            "probability": מספר,
-            "impact": מספר,
-            "severity": מספר,
-            "strategies": ["אסטרטגיה 1", "אסטרטגיה 2", "אסטרטגיה 3"]
-          },
-          ...
-        ],
-        "summary": "סיכום קצר של הניתוח",
-        "additionalRisks": ["סיכון נוסף 1", "סיכון נוסף 2"]
-      }
-      
-      חשוב: החזר את התשובה אך ורק בפורמט JSON המבוקש ללא טקסט או הסברים נוספים.
-      `;
-
-      // הצג הודעת טעינה
-      document.getElementById('analyze-btn').textContent = 'מנתח באמצעות Claude 3.5...';
-      
-      // קריאה ישירה ל-API של Anthropic
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-sonnet-20240620",
-          max_tokens: 4000,
-          temperature: 0.3,
-          system: "אתה מומחה לניתוח סיכונים בפרויקטים חינוכיים המשלבים בינה מלאכותית. תפקידך לזהות סיכונים, להעריך אותם ולהציע אסטרטגיות להתמודדות.",
-          messages: [
-            { role: "user", content: prompt }
-          ]
-        })
+        `;
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`שגיאת API: ${errorData.error?.message || response.statusText}`);
-      }
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
       
-      // קבל את התשובה מ-Claude
-      const result = await response.json();
-      const claudeResponse = result.content[0].text;
-      
-      // נתח את התשובה
-      let analysisResult;
-      try {
-        // נסה לנתח את התשובה כ-JSON
-        if (typeof claudeResponse === 'string') {
-          // מצא את ה-JSON בתשובה
-          const jsonStartIdx = claudeResponse.indexOf('{');
-          const jsonEndIdx = claudeResponse.lastIndexOf('}') + 1;
-          if (jsonStartIdx >= 0 && jsonEndIdx > jsonStartIdx) {
-            const jsonStr = claudeResponse.substring(jsonStartIdx, jsonEndIdx);
-            analysisResult = JSON.parse(jsonStr);
-          } else {
-            throw new Error("לא נמצא JSON בתשובה");
-          }
-        } else {
-          analysisResult = claudeResponse;
-        }
-      } catch (parseError) {
-        console.error("שגיאה בניתוח התשובה:", parseError);
-        console.log("התשובה המקורית:", claudeResponse);
-        // אם הניתוח נכשל, נסה לפרסר את התשובה המלאה
-        try {
-          analysisResult = JSON.parse(claudeResponse);
-        } catch (e) {
-          return {
-            error: true,
-            message: "לא ניתן היה לנתח את התשובה מ-Claude",
-            rawText: claudeResponse
-          };
-        }
-      }
-      
-      // שמור את המפתח בזיכרון המקומי אם ההצלחה
-      try {
-        localStorage.setItem('claude_api_key', apiKey);
-      } catch (e) {
-        console.warn("לא ניתן לשמור את המפתח בזיכרון המקומי:", e);
-      }
-      
-      // החזר את תוצאות הניתוח
-      return {
-        error: false,
-        risks: analysisResult.risks,
-        summary: analysisResult.summary,
-        additionalRisks: analysisResult.additionalRisks || []
-      };
-      
-    } catch (error) {
-      console.error("שגיאה בקריאה ל-Claude:", error);
-      return {
-        error: true,
-        message: `שגיאה בקריאה ל-Claude: ${error.message}`
-      };
-    }
-  }
-
-  // פונקציה לטעינת המפתח מהזיכרון המקומי
-  function loadSavedApiKey() {
-    try {
-      const savedKey = localStorage.getItem('claude_api_key');
-      if (savedKey) {
-        document.getElementById('api-key').value = savedKey;
-      }
-    } catch (e) {
-      console.warn("לא ניתן לטעון את המפתח מהזיכרון המקומי:", e);
-    }
-  }
-  
-  // טעינת המפתח בעת טעינת הדף
-  document.addEventListener('DOMContentLoaded', function() {
-    loadSavedApiKey();
-  });
-  
-  // אירוע ללחיצה על כפתור ניתוח
-  document.getElementById('analyze-btn').addEventListener('click', async function() {
-    // איסוף מידע מהטופס
-    const projectName = document.getElementById('project-name').value;
-    const projectDesc = document.getElementById('project-desc').value;
-    const curriculum = document.getElementById('curriculum').value;
-    const lte = document.getElementById('lte').value;
-    const fileUsage = document.getElementById('file-usage').value;
-    
-    // בדיקת תקינות הקלט
-    if (!projectName || !projectDesc) {
-      alert('נא להזין לפחות שם פרויקט ותיאור');
-      return;
+      return tableHTML;
     }
     
-    // הפעלת אינדיקטור טעינה
-    document.getElementById('analyze-btn').textContent = 'מנתח...';
-    document.getElementById('analyze-btn').disabled = true;
-    
-    try {
-      // ניתוח המידע מהקבצים
-      const filesInfo = await fileManager.prepareFilesInfo(fileUsage);
-      
-      // בדיקה אם להשתמש ב-Claude
-      const useClaudeAI = document.getElementById('use-claude').checked;
-      let adjustedRisks = [...predefinedRisks];
-      
-      if (useClaudeAI) {
-        // ניתוח באמצעות Claude
-        const claudeResult = await analyzeWithClaude({
-          name: projectName,
-          description: projectDesc,
-          curriculum: curriculum,
-          lte: lte
-        }, filesInfo);
+    // פונקציה להכנת תוכן לשוניות
+    function generateTabsContent(projectName, risks, filesInfo) {
+      return `
+        <h2>ניתוח סיכונים: ${projectName}</h2>
         
-        if (!claudeResult.error && claudeResult.risks) {
-          // המר את הסיכונים מהפורמט של Claude לפורמט של האפליקציה
-          adjustedRisks = claudeResult.risks.map((risk, index) => ({
-            id: index + 1,
-            name: risk.category,
-            description: risk.description,
-            impacts: risk.impacts,
-            probability: risk.probability,
-            impact: risk.impact,
-            severity: risk.severity,
-            strategies: risk.strategies
-          }));
-        } else {
-          // אם יש שגיאה, נשתמש בסיכונים המוגדרים מראש
-          console.warn("נכשל ניתוח Claude:", claudeResult.message);
+        <div class="tabs">
+          <div class="tab active" data-tab="risks">טבלת סיכונים</div>
+          <div class="tab" data-tab="files">מידע מקבצים</div>
+          <div class="tab" data-tab="summary">סיכום והמלצות</div>
+        </div>
+        
+        <div id="risks-tab" class="tab-content active">
+          ${generateRiskTable(risks)}
+        </div>
+        
+        <div id="files-tab" class="tab-content">
+          <h3>מידע מהקבצים שהועלו</h3>
+          ${filesInfo.fileNames.length > 0 ? 
+            `<p>קבצים שהועלו: ${filesInfo.fileNames.join(', ')}</p>
+             ${filesInfo.textContent ? 
+               `<h4>תוכן טקסט מהקבצים:</h4>
+                <div class="file-preview">${filesInfo.textContent}</div>` : 
+               '<p>אין תוכן טקסט שניתן להציג מהקבצים שהועלו.</p>'
+             }`
+            : '<p>לא הועלו קבצים לניתוח.</p>'
+          }
+        </div>
+        
+        <div id="summary-tab" class="tab-content">
+          <h3>סיכום ממצאים והמלצות</h3>
           
-          // התאמת הסיכונים המוגדרים מראש לפי מילות מפתח
-          const fullText = [projectDesc, curriculum, lte, filesInfo.textContent].join(' ');
+          <h4>הסיכונים העיקריים:</h4>
+          <ul>
+            ${risks.slice(0, 3).map(risk => 
+              `<li><strong>${risk.name}:</strong> ${risk.description} (חומרה: ${risk.severity})</li>`
+            ).join('')}
+          </ul>
           
-          const keywords = {
-            "תוכן": ["תוכן", "תכנים", "מידע", "ידע", "בינה מלאכותית"],
-            "כשירות": ["כשירות", "הכשרה", "מורים", "צוות", "מיומנות"],
-            "מקצוענות": ["מקצועיות", "מומחיות", "ידע", "ניסיון"],
-            "ארגון": ["ארגון", "ניהול", "תכנון", "מבנה", "תפקידים"],
-            "תשתיות": ["תשתית", "טכנולוגיה", "ציוד", "מחשבים", "רשת"]
-          };
-          
-          // חישוב התאמות פשוטות לסיכונים
-          adjustedRisks.forEach(risk => {
-            const categoryKeywords = keywords[risk.name.split(' ')[0]] || [];
-            let relevanceScore = 1.0; // ערך התחלתי ניטרלי
-            
-            // בדיקת מילות מפתח בטקסט המלא
-            categoryKeywords.forEach(keyword => {
-              if (fullText.includes(keyword)) {
-                relevanceScore += 0.1; // עלייה קטנה בציון הרלוונטיות
-              }
-            });
-            
-            // התאמת ערכי הסיכון
-            risk.probability = Math.min(10, Math.max(1, Math.round(risk.probability * relevanceScore)));
-            risk.impact = Math.min(10, Math.max(1, Math.round(risk.impact * relevanceScore)));
-            risk.severity = risk.probability * risk.impact;
-          });
-        }
-      } else {
-        // אם לא משתמשים ב-Claude, נשתמש בסיכונים המוגדרים מראש עם התאמות
+          <h4>המלצות עיקריות:</h4>
+          <ul>
+            ${risks.slice(0, 3).flatMap(risk => 
+              risk.strategies.slice(0, 1).map(strategy => `<li>${strategy}</li>`)
+            ).join('')}
+            <li>מומלץ להקים צוות ייעודי למעקב אחר סיכונים ויישום אסטרטגיות התמודדות</li>
+            <li>יש לתעד את תהליך ניהול הסיכונים ולעדכן את הניתוח באופן תקופתי</li>
+          </ul>
+        </div>
+        
+        <div class="export-buttons">
+          <button id="export-csv">ייצוא ל-CSV</button>
+          <button id="export-json">ייצוא ל-JSON</button>
+          <button id="print">הדפסה</button>
+        </div>
+      `;
+    }
+    
+    // פונקציה לייצוא לפורמט CSV
+    function generateCSV(risks) {
+      let csv = "מספר,קטגוריה,תיאור הסיכון,השלכות,הסתברות,נזק צפוי,חומרת הסיכון,אסטרטגיות להתמודדות\n";
+      
+      risks.forEach(risk => {
+        csv += `${risk.id},"${risk.name}","${risk.description}","${risk.impacts}",${risk.probability},${risk.impact},${risk.severity},"${risk.strategies.join('; ')}"\n`;
+      });
+      
+      return csv;
+    }
+    
+    // פונקציה להורדת קובץ
+    function downloadFile(content, fileName, contentType) {
+      const a = document.createElement("a");
+      const file = new Blob([content], { type: contentType });
+      a.href = URL.createObjectURL(file);
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    
+    // אירוע ללחיצה על כפתור ניתוח
+    document.getElementById('analyze-btn').addEventListener('click', async function() {
+      // איסוף מידע מהטופס
+      const projectName = document.getElementById('project-name').value;
+      const projectDesc = document.getElementById('project-desc').value;
+      const curriculum = document.getElementById('curriculum').value;
+      const lte = document.getElementById('lte').value;
+      const fileUsage = document.getElementById('file-usage').value;
+      
+      // בדיקת תקינות הקלט
+      if (!projectName || !projectDesc) {
+        alert('נא להזין לפחות שם פרויקט ותיאור');
+        return;
+      }
+      
+      // הפעלת אינדיקטור טעינה
+      document.getElementById('analyze-btn').textContent = 'מנתח...';
+      document.getElementById('analyze-btn').disabled = true;
+      
+      try {
+        // ניתוח המידע מהקבצים
+        const filesInfo = await fileManager.prepareFilesInfo(fileUsage);
+        
+        // התאמת הסיכונים לפי מידע שהוזן
+        const adjustedRisks = [...predefinedRisks];
+        
+        // לוגיקה פשוטה להתאמת הסיכונים לפי מילות מפתח
         const fullText = [projectDesc, curriculum, lte, filesInfo.textContent].join(' ');
         
         const keywords = {
@@ -544,57 +576,59 @@
           risk.impact = Math.min(10, Math.max(1, Math.round(risk.impact * relevanceScore)));
           risk.severity = risk.probability * risk.impact;
         });
-      }
-      
-      // מיון הסיכונים לפי חומרה
-      adjustedRisks.sort((a, b) => b.severity - a.severity);
-      
-      // הכנת תוכן הדוח
-      const resultHTML = generateTabsContent(projectName, adjustedRisks, filesInfo);
-     // הצגת התוצאות
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = resultHTML;
-      resultDiv.style.display = 'block';
-      
-      // הוספת מאזיני אירועים ללשוניות
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          // הסרת המחלקה 'active' מכל הלשוניות
-          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          // הוספת המחלקה 'active' ללשונית הנוכחית
-          this.classList.add('active');
-          
-          // הסתרת כל התוכן של הלשוניות
-          document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-          
-          // הצגת התוכן של הלשונית שנבחרה
-          const tabId = this.getAttribute('data-tab') + '-tab';
-          document.getElementById(tabId).style.display = 'block';
+        
+        // מיון הסיכונים לפי חומרה
+        adjustedRisks.sort((a, b) => b.severity - a.severity);
+        
+        // הכנת תוכן הדוח
+        const resultHTML = generateTabsContent(projectName, adjustedRisks, filesInfo);
+        
+        // הצגת התוצאות
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = resultHTML;
+        resultDiv.style.display = 'block';
+        
+        // הוספת מאזיני אירועים ללשוניות
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', function() {
+            // הסרת המחלקה 'active' מכל הלשוניות
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            // הוספת המחלקה 'active' ללשונית הנוכחית
+            this.classList.add('active');
+            
+            // הסתרת כל התוכן של הלשוניות
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            
+            // הצגת התוכן של הלשונית שנבחרה
+            const tabId = this.getAttribute('data-tab') + '-tab';
+            document.getElementById(tabId).style.display = 'block';
+          });
         });
-      });
-      
-      // הוספת מאזיני אירועים לכפתורי הייצוא
-      document.getElementById('export-csv').addEventListener('click', function() {
-        const csvContent = generateCSV(adjustedRisks);
-        downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-8');
-      });
-      
-      document.getElementById('export-json').addEventListener('click', function() {
-        const jsonContent = JSON.stringify(adjustedRisks, null, 2);
-        downloadFile(jsonContent, projectName + '-risk-analysis.json', 'application/json');
-      });
-      
-      document.getElementById('print').addEventListener('click', function() {
-        window.print();
-      });
-      
-    } catch (error) {
-      console.error('שגיאה בניתוח:', error);
-      alert('אירעה שגיאה בניתוח הסיכונים. נא לנסות שוב.');
-    } finally {
-      // החזרת הכפתור למצב הרגיל
-      document.getElementById('analyze-btn').textContent = 'נתח סיכונים';
-      document.getElementById('analyze-btn').disabled = false;
-    }
-  });
-</script>
+        
+        // הוספת מאזיני אירועים לכפתורי הייצוא
+        document.getElementById('export-csv').addEventListener('click', function() {
+          const csvContent = generateCSV(adjustedRisks);
+          downloadFile(csvContent, projectName + '-risk-analysis.csv', 'text/csv;charset=utf-8');
+        });
+        
+        document.getElementById('export-json').addEventListener('click', function() {
+          const jsonContent = JSON.stringify(adjustedRisks, null, 2);
+          downloadFile(jsonContent, projectName + '-risk-analysis.json', 'application/json');
+        });
+        
+        document.getElementById('print').addEventListener('click', function() {
+          window.print();
+        });
+        
+      } catch (error) {
+        console.error('שגיאה בניתוח:', error);
+        alert('אירעה שגיאה בניתוח הסיכונים. נא לנסות שוב.');
+      } finally {
+        // החזרת הכפתור למצב הרגיל
+        document.getElementById('analyze-btn').textContent = 'נתח סיכונים';
+        document.getElementById('analyze-btn').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
